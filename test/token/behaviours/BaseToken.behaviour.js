@@ -62,6 +62,14 @@ function shouldBehaveLikeBaseToken (
     shouldBehaveLikeERC1363([owner, anotherAccount, recipient], _initialBalance);
   });
 
+  context('like a BaseToken', function () {
+    describe('once deployed', function () {
+      it('total supply should be zero', async function () {
+        (await this.token.totalSupply()).should.be.bignumber.equal(0);
+      });
+    });
+  });
+
   context('BaseToken token behaviours', function () {
     beforeEach(async function () {
       await this.token.addMinter(minter, { from: owner });
@@ -109,6 +117,10 @@ function shouldBehaveLikeBaseToken (
 
       it('mintingFinished should be true', async function () {
         (await this.token.mintingFinished()).should.be.equal(true);
+      });
+
+      it('shouldn\'t mint more tokens', async function () {
+        await shouldFail.reverting(this.token.mint(thirdParty, 1, { from: minter }));
       });
     });
   });

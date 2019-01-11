@@ -33,16 +33,4 @@ contract('ShakaToken', function ([owner, anotherAccount, minter, operator, recip
       [_name, _symbol, _decimals, _cap, _initialBalance]
     );
   });
-
-  context('like a ShakaToken', function () {
-    beforeEach(async function () {
-      this.token = await ShakaToken.new(_name, _symbol, _decimals, _cap, { from: owner });
-    });
-
-    describe('once deployed', function () {
-      it('total supply should be zero', async function () {
-        (await this.token.totalSupply()).should.be.bignumber.equal(0);
-      });
-    });
-  });
 });
