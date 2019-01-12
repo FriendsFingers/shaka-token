@@ -5,6 +5,8 @@
 
 Smart Contracts for the Shaka Token issued by FriendsFingers.
 
+Official website: [https://www.friendsfingers.com/shaka](https://www.friendsfingers.com/shaka)
+
 ## Prerequisites
 
 Install truffle

@@ -68,7 +68,6 @@
     "truffle-contract": "^3.0.7",
     "truffle-hdwallet-provider": "^1.0.1",
     "truffle-wallet-provider": "^0.0.5",
-    "vuepress": "^0.14.8",
     "web3": "0.20.6",
     "web3-eth-abi": "^1.0.0-beta.37",
     "web3-utils": "^1.0.0-beta.37"
