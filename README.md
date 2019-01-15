@@ -72,7 +72,7 @@ npm install -g truffle-flattener
 Usage 
 
 ```bash
-truffle-flattener contracts/token/ShakaToken.sol > .dist/ShakaToken.dist.sol
+truffle-flattener contracts/token/ShakaToken.sol > dist/ShakaToken.dist.sol
 ```
 
 ## License

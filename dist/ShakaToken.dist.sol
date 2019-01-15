@@ -1265,7 +1265,7 @@ contract BaseToken is ERC20Detailed, ERC20Capped, ERC20Burnable, ERC1363, Operat
   event MintFinished();
 
   // indicates if minting is finished
-  bool public _mintingFinished = false;
+  bool private _mintingFinished = false;
 
   /**
    * @dev Tokens can be minted only before minting finished
@@ -1303,7 +1303,7 @@ contract BaseToken is ERC20Detailed, ERC20Capped, ERC20Burnable, ERC1363, Operat
   /**
    * @return if minting is finished or not
    */
-  function mintingFinished() public view returns(bool) {
+  function mintingFinished() public view returns (bool) {
     return _mintingFinished;
   }
 
