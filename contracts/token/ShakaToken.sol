@@ -1,6 +1,6 @@
 pragma solidity ^0.4.25;
 
-import "./BaseToken.sol";
+import "ico-maker/contracts/token/BaseToken.sol";
 
 /**
  * @title ShakaToken

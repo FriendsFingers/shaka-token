@@ -1,6 +1,6 @@
 const shouldFail = require('openzeppelin-solidity/test/helpers/shouldFail');
 
-const { shouldBehaveLikeBaseToken } = require('./behaviours/BaseToken.behaviour');
+const { shouldBehaveLikeBaseToken } = require('ico-maker/test/token/behaviours/BaseToken.behaviour');
 
 const BigNumber = web3.BigNumber;
 

@@ -1211,7 +1211,7 @@ contract TokenRecover is Ownable {
   }
 }
 
-// File: contracts/access/roles/OperatorRole.sol
+// File: ico-maker/contracts/access/roles/OperatorRole.sol
 
 contract OperatorRole {
   using Roles for Roles.Role;
@@ -1253,7 +1253,7 @@ contract OperatorRole {
   }
 }
 
-// File: contracts/token/BaseToken.sol
+// File: ico-maker/contracts/token/BaseToken.sol
 
 /**
  * @title BaseToken
