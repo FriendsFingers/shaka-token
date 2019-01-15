@@ -1263,9 +1263,13 @@ contract OperatorRole {
 contract BaseToken is ERC20Detailed, ERC20Capped, ERC20Burnable, ERC1363, OperatorRole, TokenRecover {
 
   event MintFinished();
+  event TransferEnabled();
 
   // indicates if minting is finished
   bool private _mintingFinished = false;
+
+  // indicates if transfer is enabled
+  bool private _transferEnabled = false;
 
   /**
    * @dev Tokens can be minted only before minting finished
@@ -1276,10 +1280,10 @@ contract BaseToken is ERC20Detailed, ERC20Capped, ERC20Burnable, ERC1363, Operat
   }
 
   /**
-   * @dev Tokens can be moved only after minting finished or if you are an approved operator
+   * @dev Tokens can be moved only after if transfer enabled or if you are an approved operator
    */
   modifier canTransfer(address from) {
-    require(_mintingFinished || isOperator(from));
+    require(_transferEnabled || isOperator(from));
     _;
   }
 
@@ -1288,23 +1292,36 @@ contract BaseToken is ERC20Detailed, ERC20Capped, ERC20Burnable, ERC1363, Operat
    * @param symbol A symbol to be used as ticker
    * @param decimals Number of decimals. All the operations are done using the smallest and indivisible token unit
    * @param cap Maximum number of tokens mintable
+   * @param initialSupply Initial token supply
    */
   constructor(
     string name,
     string symbol,
     uint8 decimals,
-    uint256 cap
+    uint256 cap,
+    uint256 initialSupply
   )
     ERC20Detailed(name, symbol, decimals)
     ERC20Capped(cap)
     public
-  {}
+  {
+    if (initialSupply > 0) {
+      _mint(owner(), initialSupply);
+    }
+  }
 
   /**
    * @return if minting is finished or not
    */
   function mintingFinished() public view returns (bool) {
     return _mintingFinished;
+  }
+
+  /**
+   * @return if transfer is enabled or not
+   */
+  function transferEnabled() public view returns (bool) {
+    return _transferEnabled;
   }
 
   function mint(address to, uint256 value) public canMint returns (bool) {
@@ -1320,11 +1337,23 @@ contract BaseToken is ERC20Detailed, ERC20Capped, ERC20Burnable, ERC1363, Operat
   }
 
   /**
-   * @dev Function to stop minting new tokens.
+   * @dev Function to stop minting new tokens
    */
   function finishMinting() public onlyOwner canMint {
     _mintingFinished = true;
+    _transferEnabled = true;
+
     emit MintFinished();
+    emit TransferEnabled();
+  }
+
+  /**
+ * @dev Function to enable transfers.
+ */
+  function enableTransfer() public onlyOwner {
+    _transferEnabled = true;
+
+    emit TransferEnabled();
   }
 
   /**
@@ -1358,14 +1387,22 @@ contract ShakaToken is BaseToken {
    * @param symbol A symbol to be used as ticker
    * @param decimals Number of decimals. All the operations are done using the smallest and indivisible token unit
    * @param cap Maximum number of tokens mintable
+   * @param initialSupply Initial token supply
    */
   constructor(
     string name,
     string symbol,
     uint8 decimals,
-    uint256 cap
+    uint256 cap,
+    uint256 initialSupply
   )
-    BaseToken(name, symbol, decimals, cap)
+    BaseToken(
+      name,
+      symbol,
+      decimals,
+      cap,
+      initialSupply
+    )
     public
   {}
 }
