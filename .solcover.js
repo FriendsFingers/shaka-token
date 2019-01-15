@@ -7,5 +7,7 @@ module.exports = {
     'eth-token-recover',
     'openzeppelin-solidity',
   ],
-  skipFiles: []
+  skipFiles: [
+    'mocks',
+  ],
 };
