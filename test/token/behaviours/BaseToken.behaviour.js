@@ -19,7 +19,7 @@ require('chai')
 
 function shouldBehaveLikeBaseToken (
   [owner, anotherAccount, minter, operator, recipient, thirdParty],
-  [_name, _symbol, _decimals, _cap, _initialBalance]
+  [_name, _symbol, _decimals, _cap, _initialSupply]
 ) {
   context('like a ERC20Detailed', function () {
     shouldBehaveLikeERC20Detailed(_name, _symbol, _decimals);
@@ -35,40 +35,26 @@ function shouldBehaveLikeBaseToken (
   context('like a ERC20Capped', function () {
     beforeEach(async function () {
       await this.token.addMinter(minter, { from: owner });
+
+      // NOTE: burning initial supply to test cap
+      await this.token.burn(_initialSupply, { from: owner });
     });
     shouldBehaveLikeERC20Capped(minter, [anotherAccount], _cap);
   });
 
   context('like a ERC20Burnable', function () {
-    beforeEach(async function () {
-      await this.token.addMinter(minter, { from: owner });
-      await this.token.mint(owner, _initialBalance, { from: minter });
-    });
-    shouldBehaveLikeERC20Burnable(owner, _initialBalance, [owner]);
+    shouldBehaveLikeERC20Burnable(owner, _initialSupply, [owner]);
   });
 
   context('like a ERC20', function () {
     beforeEach(async function () {
       await this.token.addMinter(minter, { from: owner });
-      await this.token.mint(owner, _initialBalance, { from: minter });
     });
-    shouldBehaveLikeERC20([owner, anotherAccount, recipient], _initialBalance);
+    shouldBehaveLikeERC20([owner, anotherAccount, recipient], _initialSupply);
   });
 
   context('like a ERC1363', function () {
-    beforeEach(async function () {
-      await this.token.addMinter(minter, { from: owner });
-      await this.token.mint(owner, _initialBalance, { from: minter });
-    });
-    shouldBehaveLikeERC1363([owner, anotherAccount, recipient], _initialBalance);
-  });
-
-  context('like a BaseToken', function () {
-    describe('once deployed', function () {
-      it('total supply should be zero', async function () {
-        (await this.token.totalSupply()).should.be.bignumber.equal(0);
-      });
-    });
+    shouldBehaveLikeERC1363([owner, anotherAccount, recipient], _initialSupply);
   });
 
   context('BaseToken token behaviours', function () {
@@ -76,7 +62,7 @@ function shouldBehaveLikeBaseToken (
       await this.token.addMinter(minter, { from: owner });
       await this.token.addOperator(operator, { from: owner });
 
-      await this.token.mint(thirdParty, _initialBalance, { from: minter });
+      await this.token.mint(thirdParty, _initialSupply, { from: minter });
     });
 
     context('before finish minting', function () {
@@ -84,31 +70,73 @@ function shouldBehaveLikeBaseToken (
         (await this.token.mintingFinished()).should.be.equal(false);
       });
 
-      describe('if it is not an operator', function () {
-        it('should fail transfer', async function () {
-          await shouldFail.reverting(this.token.transfer(recipient, _initialBalance, { from: thirdParty }));
+      describe('if transfer are not enabled', function () {
+        it('transferEnabled should be false', async function () {
+          (await this.token.transferEnabled()).should.be.equal(false);
         });
 
-        it('should fail transferFrom', async function () {
-          await this.token.approve(anotherAccount, _initialBalance, { from: thirdParty });
-          await shouldFail.reverting(
-            this.token.transferFrom(thirdParty, recipient, _initialBalance, { from: anotherAccount })
-          );
+        describe('if it is not an operator', function () {
+          it('should fail transfer', async function () {
+            await shouldFail.reverting(this.token.transfer(recipient, _initialSupply, { from: thirdParty }));
+          });
+
+          it('should fail transferFrom', async function () {
+            await this.token.approve(anotherAccount, _initialSupply, { from: thirdParty });
+            await shouldFail.reverting(
+              this.token.transferFrom(thirdParty, recipient, _initialSupply, { from: anotherAccount })
+            );
+          });
+        });
+
+        describe('if it is an operator', function () {
+          beforeEach(async function () {
+            await this.token.addOperator(thirdParty, { from: owner });
+          });
+
+          it('should transfer', async function () {
+            await this.token.transfer(thirdParty, _initialSupply, { from: thirdParty });
+          });
+
+          it('should transferFrom', async function () {
+            await this.token.approve(anotherAccount, _initialSupply, { from: thirdParty });
+            await this.token.transferFrom(thirdParty, recipient, _initialSupply, { from: anotherAccount });
+          });
         });
       });
 
-      describe('if it is an operator', function () {
+      describe('if transfer are enabled', function () {
         beforeEach(async function () {
-          await this.token.addOperator(thirdParty, { from: owner });
+          await this.token.enableTransfer({ from: owner });
         });
 
-        it('should transfer', async function () {
-          await this.token.transfer(thirdParty, _initialBalance, { from: thirdParty });
+        it('transferEnabled should be true', async function () {
+          (await this.token.transferEnabled()).should.be.equal(true);
         });
 
-        it('should transferFrom', async function () {
-          await this.token.approve(anotherAccount, _initialBalance, { from: thirdParty });
-          await this.token.transferFrom(thirdParty, recipient, _initialBalance, { from: anotherAccount });
+        describe('if it is not an operator', function () {
+          it('should transfer', async function () {
+            await this.token.transfer(thirdParty, _initialSupply, { from: thirdParty });
+          });
+
+          it('should transferFrom', async function () {
+            await this.token.approve(anotherAccount, _initialSupply, { from: thirdParty });
+            await this.token.transferFrom(thirdParty, recipient, _initialSupply, { from: anotherAccount });
+          });
+        });
+
+        describe('if it is an operator', function () {
+          beforeEach(async function () {
+            await this.token.addOperator(thirdParty, { from: owner });
+          });
+
+          it('should transfer', async function () {
+            await this.token.transfer(thirdParty, _initialSupply, { from: thirdParty });
+          });
+
+          it('should transferFrom', async function () {
+            await this.token.approve(anotherAccount, _initialSupply, { from: thirdParty });
+            await this.token.transferFrom(thirdParty, recipient, _initialSupply, { from: anotherAccount });
+          });
         });
       });
     });
@@ -116,6 +144,10 @@ function shouldBehaveLikeBaseToken (
     context('after finish minting', function () {
       beforeEach(async function () {
         await this.token.finishMinting({ from: owner });
+      });
+
+      it('transferEnabled should be true', async function () {
+        (await this.token.transferEnabled()).should.be.equal(true);
       });
 
       it('mintingFinished should be true', async function () {
@@ -148,14 +180,14 @@ function shouldBehaveLikeBaseToken (
         shouldBehaveLikeRemoveRole(owner, minter, [thirdParty], 'minter');
       });
     });
-  });
 
-  context('like a TokenRecover', function () {
-    beforeEach(async function () {
-      this.instance = this.token;
+    context('like a TokenRecover', function () {
+      beforeEach(async function () {
+        this.instance = this.token;
+      });
+
+      shouldBehaveLikeTokenRecover([owner, thirdParty]);
     });
-
-    shouldBehaveLikeTokenRecover([owner, thirdParty]);
   });
 }
 

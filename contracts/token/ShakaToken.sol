@@ -14,14 +14,22 @@ contract ShakaToken is BaseToken {
    * @param symbol A symbol to be used as ticker
    * @param decimals Number of decimals. All the operations are done using the smallest and indivisible token unit
    * @param cap Maximum number of tokens mintable
+   * @param initialSupply Initial token supply
    */
   constructor(
     string name,
     string symbol,
     uint8 decimals,
-    uint256 cap
+    uint256 cap,
+    uint256 initialSupply
   )
-    BaseToken(name, symbol, decimals, cap)
+    BaseToken(
+      name,
+      symbol,
+      decimals,
+      cap,
+      initialSupply
+    )
     public
   {}
 }
