@@ -3,6 +3,7 @@ const shouldFail = require('openzeppelin-solidity/test/helpers/shouldFail');
 const { shouldBehaveLikeERC20Mintable } = require('openzeppelin-solidity/test/token/ERC20/behaviors/ERC20Mintable.behavior'); // eslint-disable-line max-len
 const { shouldBehaveLikeERC20Capped } = require('openzeppelin-solidity/test/token/ERC20/behaviors/ERC20Capped.behavior'); // eslint-disable-line max-len
 const { shouldBehaveLikeERC20Burnable } = require('openzeppelin-solidity/test/token/ERC20/behaviors/ERC20Burnable.behavior'); // eslint-disable-line max-len
+const { shouldBehaveLikeOwnable } = require('openzeppelin-solidity/test/ownership/Ownable.behavior');
 const { shouldBehaveLikeERC1363 } = require('erc-payable-token/test/token/ERC1363/ERC1363.behaviour');
 const { shouldBehaveLikeTokenRecover } = require('eth-token-recover/test/TokenRecover.behaviour');
 
@@ -73,6 +74,8 @@ function shouldBehaveLikeBaseToken (
   context('BaseToken token behaviours', function () {
     beforeEach(async function () {
       await this.token.addMinter(minter, { from: owner });
+      await this.token.addOperator(operator, { from: owner });
+
       await this.token.mint(thirdParty, _initialBalance, { from: minter });
     });
 
@@ -123,22 +126,27 @@ function shouldBehaveLikeBaseToken (
         await shouldFail.reverting(this.token.mint(thirdParty, 1, { from: minter }));
       });
     });
-  });
 
-  context('testing remove roles', function () {
-    beforeEach(async function () {
-      await this.token.addOperator(operator, { from: owner });
-      await this.token.addMinter(minter, { from: owner });
+    context('testing ownership', function () {
+      beforeEach(async function () {
+        this.ownable = this.token;
+      });
 
-      this.contract = this.token;
+      shouldBehaveLikeOwnable(owner, [thirdParty]);
     });
 
-    describe('operator', function () {
-      shouldBehaveLikeRemoveRole(owner, operator, [thirdParty], 'operator');
-    });
+    context('testing remove roles', function () {
+      beforeEach(async function () {
+        this.contract = this.token;
+      });
 
-    describe('minter', function () {
-      shouldBehaveLikeRemoveRole(owner, minter, [thirdParty], 'minter');
+      describe('operator', function () {
+        shouldBehaveLikeRemoveRole(owner, operator, [thirdParty], 'operator');
+      });
+
+      describe('minter', function () {
+        shouldBehaveLikeRemoveRole(owner, minter, [thirdParty], 'minter');
+      });
     });
   });
 
