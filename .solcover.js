@@ -8,5 +8,7 @@ module.exports = {
     'erc-payable-token',
     'eth-token-recover',
   ],
-  skipFiles: []
+  skipFiles: [
+    'mocks',
+  ],
 };
